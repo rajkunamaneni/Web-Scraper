@@ -1,3 +1,4 @@
+/* Create Table on LocalHost */
 CREATE TABLE `classes` (
  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
  `name_of_class` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
