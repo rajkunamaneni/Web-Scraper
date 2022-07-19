@@ -59,43 +59,49 @@ def main():
             db.rollback()
             db.close()
             class_id = -1
-
-        dates_table = parse.find_all("table", {"summary": "Overview of all event dates"});
-
-        #parse content of dates table
-        for i in dates_table:
-            for j in i.select("tr"):
-                cell = j.findAll("td")
-                if (len(cell) > 0):
-                    #split the table
-                    duration = cell[0].text.split("to")
+            
+        dates_tables = parse.find_all("table", {"summary": "Overview of all event dates"});
+        #Iterate through the tables
+        for table in dates_tables:
+            #Iterate through the rows inside the table
+            for row in table.select("tr"):
+                #Get all cells inside the row
+                cells = row.findAll("td")
+                #check if there is at least one td cell inside this row
+                if(len(cells) > 0):
+                    #get all the different data from the table's tds
+                    #Split this cell into two different parts seperated by 'to' in order to have a start_date and an end_date.
+                    duration = cells[0].text.split("to")
                     start_date = duration[0].strip()
                     end_date = duration[1].strip()
-                    day = cell[1].text.strip()
-                    time = cell[2].text.split("to")
+                    day = cells[1].text.strip()
+                    #Split this cell into two different parts seperated by 'to' in order to have a start_time and an end_time.
+                    time = cells[2].text.split("to")
                     start_time = time[0].strip()
                     end_time = time[1].strip()
-                    frequency = cell[3].text.strip()
-                    room = cell[4].text.strip()
-                    lecturer_for_date = cell[5].text.strip()
-                    status = cell[6].text.strip()
-                    remarks = cell[7].text.strip()
-                    cancelled_on = cell[8].text.strip()
-                    max_participants = cell[9].text.strip()
-
+                    frequency = cells[3].text.strip()
+                    room = cells[4].text.strip()
+                    lecturer_for_date = cells[5].text.strip()
+                    status = cells[6].text.strip()
+                    remarks = cells[7].text.strip()
+                    cancelled_on = cells[8].text.strip()
+                    max_participants = cells[9].text.strip()
+                    #Save event data to database
+                    # Open database connection
                     db = MySQLdb.connect(HOST, USERNAME, PASSWORD, DATABASE)
                     # prepare a cursor object using cursor() method
                     cursor = db.cursor()
                     # Prepare SQL query to INSERT a record into the database.
                     sql = "INSERT INTO events(class_id, start_date, end_date, day, start_time, end_time, frequency, room, lecturer_for_date, status, remarks, cancelled_on, max_participants, created_at) VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', {})".format(class_id, start_date, end_date, day, start_time, end_time, frequency, room, lecturer_for_date, status, remarks, cancelled_on, max_participants, 'NOW()')
                     try:
-                        # Execute the SQL command
-                        cursor.execute(sql)
-                        # Commit your changes in the database
-                        db.commit()
+                    # Execute the SQL command
+                    cursor.execute(sql)
+                    # Commit your changes in the database
+                    db.commit()
                     except:
-                        #error happened :(
-                        db.rollback()
+                    # Rollback in case there is any error
+                    db.rollback()
+                    # disconnect from server
                     db.close()
 
 if __name__ == "__main__":
