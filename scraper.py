@@ -5,9 +5,23 @@ from log import Logger
 
 def main():
     #set user info for mysql login
+    HOST = "localhost"
+    USERNAME = "test_user"
+    PASSWORD = ""
+    DATABASE = "test_sample"
+    
+    #create log file for debugging
+    logger = Logger().logger
 
+    logger.info("connection to server succeeded.")
+
+    #website to scrape and store 
     url_to_scrape = 'https://howpcrules.com/sample-page-for-web-scraping/'
+    
+    #use https get request to get the html info to parse
     plain_html_text = requests.get(url_to_scrape)
+    
+    #read the html content (use prettify for easier read)
     soup = bsoup(plain_html_text.text, "html.parser")
 
     #Get the name of the table
@@ -17,6 +31,7 @@ def main():
    
     basic_data_cells = basic_data_table.findAll('td')
 
+    #strip the data from the table
     type_of_course = basic_data_cells[0].text.strip()
     lecturer = basic_data_cells[1].text.strip()
     number = basic_data_cells[2].text.strip()
@@ -33,14 +48,17 @@ def main():
 
     # Open database connection
     db = MySQLdb.connect(HOST, USERNAME, PASSWORD, DATABASE)
+    
     # prepare a cursor object using cursor() method
     cursor = db.cursor()
     sql = "INSERT INTO classes(name_of_class, type_of_course, lecturer, number, short_text, choice_term, hours_per_week_in_term, expected_num_of_participants, maximum_participants, assignment, lecture_id, credit_points, hyperlink, language, created_at) VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', {})".format(name_of_class, type_of_course, lecturer, number, short_text, choice_term, hours_per_week_in_term, expected_num_of_participants, maximum_participants, assignment, lecture_id, credit_points, hyperlink, language, 'NOW()')
     try:
         cursor.execute(sql)
         db.commit()
+        logger.info("\n*** Table was created successfully. ***\n")
     except:
         db.rollback()
+        logger.error("\n*** ERROR ***\n")
         
     sql = "SELECT LAST_INSERT_ID()"
     try:
@@ -48,14 +66,16 @@ def main():
         result = cursor.fetchone()
         class_id = result[0]
     except:
-        # Rollback in case there is any error
+        #error happened so end program :(
         db.rollback()
         db.close()
+        logger.error("\n*** Program Closed with ERROR ***\n")
         class_id = -1
 
     #Get the tables where the dates are written.
     dates_tables = soup.find_all("table", {"summary": "Overview of all event dates"});
 
+    #move through multiple tables
     for table in dates_tables:
         for row in table.select("tr"):
             cells = row.findAll("td")
@@ -74,17 +94,21 @@ def main():
                 remarks = cells[7].text.strip()
                 cancelled_on = cells[8].text.strip()
                 max_participants = cells[9].text.strip()
+                
                 #Save event data to database
-
                 db = MySQLdb.connect(HOST, USERNAME, PASSWORD, DATABASE)
                 cursor = db.cursor()
                 
                 sql = "INSERT INTO events(class_id, start_date, end_date, day, start_time, end_time, frequency, room, lecturer_for_date, status, remarks, cancelled_on, max_participants, created_at) VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', {})".format(class_id, start_date, end_date, day, start_time, end_time, frequency, room, lecturer_for_date, status, remarks, cancelled_on, max_participants, 'NOW()')
                 try:
+                    logger.info("\n*** Table was created successfully. ***\n")
                     cursor.execute(sql)
                     db.commit()
                 except:
                     db.rollback()
+                    logger.error("\n*** Error ***\n")
+                
+                logger.info("\n*** Program Closed***\n")
                 db.close()
 
 if __name__ == "__main__":
