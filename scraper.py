@@ -3,17 +3,19 @@ import requests
 import MySQLdb
 from log import Logger
 
+'''
+Parse through URL and store the content in MySQL database
+Logging visible through logs.log
+'''
 def main():
     #set user info for mysql login
     HOST = "localhost"
     USERNAME = "test_user"
     PASSWORD = ""
     DATABASE = "test_sample"
-    
+
     #create log file for debugging
     logger = Logger().logger
-
-    logger.info("connection to server succeeded.")
 
     #website to scrape and store 
     url_to_scrape = 'https://howpcrules.com/sample-page-for-web-scraping/'
@@ -24,6 +26,8 @@ def main():
     #read the html content (use prettify for easier read)
     soup = bsoup(plain_html_text.text, "html.parser")
 
+    logger.info("\n*** Read HTML succeeded. ***\n")
+    
     #Get the name of the table
     name_of_class = soup.h3.text.strip()
 
@@ -48,17 +52,19 @@ def main():
 
     # Open database connection
     db = MySQLdb.connect(HOST, USERNAME, PASSWORD, DATABASE)
-    
+   
+    logger.info("\n*** connection to server succeeded. ***\n")  
+
     # prepare a cursor object using cursor() method
     cursor = db.cursor()
     sql = "INSERT INTO classes(name_of_class, type_of_course, lecturer, number, short_text, choice_term, hours_per_week_in_term, expected_num_of_participants, maximum_participants, assignment, lecture_id, credit_points, hyperlink, language, created_at) VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', {})".format(name_of_class, type_of_course, lecturer, number, short_text, choice_term, hours_per_week_in_term, expected_num_of_participants, maximum_participants, assignment, lecture_id, credit_points, hyperlink, language, 'NOW()')
     try:
         cursor.execute(sql)
         db.commit()
-        logger.info("\n*** Table was created successfully. ***\n")
+        logger.info("\n*** Insert was successful. ***\n")
     except:
         db.rollback()
-        logger.error("\n*** ERROR ***\n")
+        logger.error("\n*** Insert was failed. ***\n")
         
     sql = "SELECT LAST_INSERT_ID()"
     try:
@@ -101,15 +107,17 @@ def main():
                 
                 sql = "INSERT INTO events(class_id, start_date, end_date, day, start_time, end_time, frequency, room, lecturer_for_date, status, remarks, cancelled_on, max_participants, created_at) VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', {})".format(class_id, start_date, end_date, day, start_time, end_time, frequency, room, lecturer_for_date, status, remarks, cancelled_on, max_participants, 'NOW()')
                 try:
-                    logger.info("\n*** Table was created successfully. ***\n")
+                    logger.info("\n*** Insert was successful. ***\n")
                     cursor.execute(sql)
                     db.commit()
                 except:
                     db.rollback()
                     logger.error("\n*** Error ***\n")
                 
-                logger.info("\n*** Program Closed***\n")
+                logger.info("\n*** Insert Ended ***\n")
                 db.close()
+
+    logger.info("\n*** Program Closed ***\n")
 
 if __name__ == "__main__":
     main()

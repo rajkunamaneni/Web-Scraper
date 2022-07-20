@@ -1,6 +1,10 @@
 import logging
 import sys
 
+'''
+Logging Request and Responses from Database 
+and Program
+'''
 class Logger:
     def __init__(self):
         # Initiating the logger object
@@ -22,7 +26,8 @@ class Logger:
         # And printing the logs to the console as well
         self.logger.addHandler(logging.StreamHandler(sys.stdout))
 
-# Usage example:
+
+# Usage example for future reference:
 #logger = Logger().logger
 #logger.debug("This log's level is 'DEBUG'")
 #logger.info("This log's level is 'info'")
