@@ -25,10 +25,3 @@ class Logger:
         
         # And printing the logs to the console as well
         self.logger.addHandler(logging.StreamHandler(sys.stdout))
-
-
-# Usage example for future reference:
-#logger = Logger().logger
-#logger.debug("This log's level is 'DEBUG'")
-#logger.info("This log's level is 'info'")
-#logger.error("This log's level is 'error'")
