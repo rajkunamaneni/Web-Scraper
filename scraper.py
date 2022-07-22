@@ -103,7 +103,7 @@ def main():
                 
                 #Save event data to database
                 db = MySQLdb.connect(HOST, USERNAME, PASSWORD, DATABASE)
-                cursor = db.cursor()
+                cursor = db.cursor() #set current cursor 
                 
                 sql = "INSERT INTO events(class_id, start_date, end_date, day, start_time, end_time, frequency, room, lecturer_for_date, status, remarks, cancelled_on, max_participants, created_at) VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', {})".format(class_id, start_date, end_date, day, start_time, end_time, frequency, room, lecturer_for_date, status, remarks, cancelled_on, max_participants, 'NOW()')
                 try:
@@ -111,11 +111,11 @@ def main():
                     cursor.execute(sql)
                     db.commit()
                 except:
-                    db.rollback()
+                    db.rollback() #revert change 
                     logger.error("\n*** Error ***\n")
                 
                 logger.info("\n*** Insert Ended ***\n")
-                db.close()
+                db.close() #close connection
 
     logger.info("\n*** Program Closed ***\n")
 
